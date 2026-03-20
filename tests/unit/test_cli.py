@@ -94,9 +94,7 @@ class TestInitCommand:
         mock_select = MagicMock()
         mock_text = MagicMock()
 
-        mock_select.execute = MagicMock(
-            side_effect=["en", "technical", "long"]
-        )
+        mock_select.execute = MagicMock(side_effect=["en", "technical", "long"])
         mock_text.execute = MagicMock(return_value="")
 
         mock_inquirer.select = MagicMock(return_value=mock_select)
@@ -124,9 +122,7 @@ class TestAutoInit:
 
     @patch("linkedin_post_generator.cli.generate_cmd.run_init")
     @patch("linkedin_post_generator.cli.generate_cmd.config_exists")
-    def test_generate_triggers_init_when_no_config(
-        self, mock_exists, mock_init
-    ):
+    def test_generate_triggers_init_when_no_config(self, mock_exists, mock_init):
         mock_exists.return_value = False
         result = runner.invoke(app, ["generate"])
         assert result.exit_code == 0
