@@ -5,7 +5,11 @@ from linkedin_post_generator.fetcher.exceptions import (
     FetchError,
     FetchTimeoutError,
 )
-from linkedin_post_generator.fetcher.models import FetchedContent
+from linkedin_post_generator.fetcher.github_fetcher import (
+    fetch_github_repo,
+    parse_github_url,
+)
+from linkedin_post_generator.fetcher.models import FetchedContent, GitHubRepo
 from linkedin_post_generator.fetcher.url_fetcher import fetch_url
 
 __all__ = [
@@ -13,5 +17,8 @@ __all__ = [
     "FetchError",
     "FetchTimeoutError",
     "FetchedContent",
+    "GitHubRepo",
+    "fetch_github_repo",
     "fetch_url",
+    "parse_github_url",
 ]
