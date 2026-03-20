@@ -23,5 +23,10 @@ Thumbs.db
 # uv
 uv.lock
 
+# Claude Code (private repo)
+.claude/
+CLAUDE.md
+TODO.md
+
 # Project
 output/
