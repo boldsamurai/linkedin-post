@@ -10,3 +10,17 @@ class FetchedContent:
     title: str
     text: str
     url: str
+
+
+@dataclass(frozen=True)
+class GitHubRepo:
+    """Metadata and README content from a GitHub repository."""
+
+    owner: str
+    name: str
+    description: str
+    stars: int
+    language: str
+    topics: list[str]
+    readme_text: str
+    url: str

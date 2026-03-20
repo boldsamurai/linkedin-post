@@ -1,0 +1,10 @@
+{
+  "name": "fastapi",
+  "full_name": "tiangolo/fastapi",
+  "description": "FastAPI framework, high performance, easy to learn, fast to code, ready for production",
+  "stargazers_count": 78500,
+  "language": "Python",
+  "topics": ["python", "api", "web", "async", "fastapi"],
+  "html_url": "https://github.com/tiangolo/fastapi",
+  "default_branch": "master"
+}

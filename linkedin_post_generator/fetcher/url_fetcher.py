@@ -46,9 +46,7 @@ def _fetch_response(url: str) -> httpx.Response:
         response = httpx.get(
             url,
             headers={"User-Agent": USER_AGENT},
-            timeout=httpx.Timeout(
-                READ_TIMEOUT, connect=CONNECT_TIMEOUT
-            ),
+            timeout=httpx.Timeout(READ_TIMEOUT, connect=CONNECT_TIMEOUT),
             follow_redirects=True,
         )
     except httpx.TimeoutException as exc:
