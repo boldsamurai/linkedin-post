@@ -29,6 +29,7 @@ linkedin-post = "linkedin_post_generator.cli:app"
 [dependency-groups]
 dev = [
     "pytest",
+    "pytest-httpx",
     "ruff",
 ]
 

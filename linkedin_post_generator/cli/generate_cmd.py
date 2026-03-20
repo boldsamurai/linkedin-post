@@ -12,9 +12,7 @@ console = Console()
 def generate() -> None:
     """Interactive post generation flow."""
     if not config_exists():
-        console.print(
-            "[cyan]Pierwsza konfiguracja — uruchamiam wizard...[/]\n"
-        )
+        console.print("[cyan]Pierwsza konfiguracja — uruchamiam wizard...[/]\n")
         run_init()
         console.print()
 
