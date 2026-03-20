@@ -1,0 +1,31 @@
+[project]
+name = "linkedin-post-generator"
+version = "0.1.0"
+description = "Interactive CLI tool that generates LinkedIn post drafts from various sources"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "typer",
+    "rich",
+    "httpx",
+    "readability-lxml",
+    "pydantic",
+    "pydantic-settings",
+    "pyperclip",
+    "InquirerPy",
+    "anthropic",
+]
+
+[project.scripts]
+linkedin-post = "linkedin_post_generator.cli:app"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
