@@ -10,6 +10,7 @@ from linkedin_post_generator.fetcher.github_fetcher import (
     parse_github_url,
 )
 from linkedin_post_generator.fetcher.models import FetchedContent, GitHubRepo
+from linkedin_post_generator.fetcher.text_input import create_note, prompt_for_note
 from linkedin_post_generator.fetcher.url_fetcher import fetch_url
 
 __all__ = [
@@ -18,7 +19,9 @@ __all__ = [
     "FetchTimeoutError",
     "FetchedContent",
     "GitHubRepo",
+    "create_note",
     "fetch_github_repo",
     "fetch_url",
     "parse_github_url",
+    "prompt_for_note",
 ]
