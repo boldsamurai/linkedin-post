@@ -1,6 +1,15 @@
 """Data models for fetched content."""
 
 from dataclasses import dataclass
+from enum import Enum
+
+
+class SourceType(Enum):
+    """Type of content source detected from user input."""
+
+    GITHUB = "github"
+    URL = "url"
+    TEXT = "text"
 
 
 @dataclass(frozen=True)
