@@ -14,9 +14,7 @@ def config() -> None:
     cfg = load_config()
 
     # Show current settings
-    table = Table(
-        title="Aktualne ustawienia", show_header=False, border_style="cyan"
-    )
+    table = Table(title="Aktualne ustawienia", show_header=False, border_style="cyan")
     table.add_column("Pole", style="cyan")
     table.add_column("Wartość")
     table.add_row("Język", cfg.language.value)
@@ -27,8 +25,6 @@ def config() -> None:
 
     console.print()
     console.print(table)
-    console.print(
-        "\n[dim]Uruchamiam wizard — nowe wartości zastąpią aktualne.[/]\n"
-    )
+    console.print("\n[dim]Uruchamiam wizard — nowe wartości zastąpią aktualne.[/]\n")
 
     init()
