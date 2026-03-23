@@ -30,8 +30,16 @@ LENGTH_RANGES: dict[Length, tuple[int, int]] = {
 }
 
 LANGUAGE_INSTRUCTIONS: dict[Language, str] = {
-    Language.PL: "Write entirely in Polish.",
-    Language.EN: "Write entirely in English.",
+    Language.PL: (
+        "Write the ENTIRE post in Polish. "
+        "Even if the source material is in English, the post MUST be in Polish. "
+        "Translate and adapt — do not copy English text into the post."
+    ),
+    Language.EN: (
+        "Write the ENTIRE post in English. "
+        "Even if the source material is in another language, "
+        "the post MUST be in English."
+    ),
 }
 
 ANTI_PATTERNS = """\
@@ -56,10 +64,19 @@ HASHTAG_POLICY = (
     "Tech terms stay in English (#Python, #DevOps) regardless of post language."
 )
 
-OUTPUT_FORMAT = (
-    "Output ONLY the post text — no titles, no explanations, no markdown formatting. "
-    "LinkedIn accepts plain text only."
-)
+OUTPUT_FORMAT = """\
+CRITICAL: Output ONLY the raw post text. Nothing else.
+
+DO NOT include:
+- Any introduction ("Here's the post:", "Oto post:", "Sure!", etc.)
+- Any separators (---, ***, ===)
+- Any metadata or character counts ("~870 znaków", "format Discovery")
+- Any follow-up questions ("Chcesz zmienić...?", "Let me know if...")
+- Any markdown formatting (**, ##, etc.)
+
+LinkedIn accepts plain text only. Your entire response must be \
+the post itself — ready to paste directly on LinkedIn.\
+"""
 
 
 def build_system_prompt(

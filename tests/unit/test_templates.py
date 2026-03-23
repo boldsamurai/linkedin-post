@@ -136,7 +136,7 @@ class TestBuildPrompt:
             language=Language.PL,
             length=Length.STANDARD,
         )
-        assert "Write entirely in Polish" in system
+        assert "post MUST be in Polish" in system
 
     def test_user_message_contains_source(self) -> None:
         register(SAMPLE_TEMPLATE)
