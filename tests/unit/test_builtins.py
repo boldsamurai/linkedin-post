@@ -36,7 +36,7 @@ class TestDiscoveryTemplate:
     """Discovery template content."""
 
     def test_label(self) -> None:
-        assert DISCOVERY.label == "Discovery"
+        assert DISCOVERY.label == "Odkrycie"
 
     def test_instructions_mention_hook(self) -> None:
         assert "Hook" in DISCOVERY.instructions
@@ -49,7 +49,7 @@ class TestOpinionTemplate:
     """Opinion template content."""
 
     def test_label(self) -> None:
-        assert OPINION.label == "Opinion"
+        assert OPINION.label == "Opinia"
 
     def test_instructions_mention_bold_statement(self) -> None:
         assert "Bold statement" in OPINION.instructions
@@ -75,7 +75,7 @@ class TestProjectShowcaseTemplate:
     """Project Showcase template content."""
 
     def test_label(self) -> None:
-        assert PROJECT_SHOWCASE.label == "Project Showcase"
+        assert PROJECT_SHOWCASE.label == "Prezentacja projektu"
 
     def test_instructions_mention_problem(self) -> None:
         assert "problem" in PROJECT_SHOWCASE.instructions.lower()
@@ -88,7 +88,7 @@ class TestArticleReactionTemplate:
     """Article Reaction template content."""
 
     def test_label(self) -> None:
-        assert ARTICLE_REACTION.label == "Article Reaction"
+        assert ARTICLE_REACTION.label == "Reakcja na artykuł"
 
     def test_instructions_mention_perspective(self) -> None:
         assert "perspective" in ARTICLE_REACTION.instructions.lower()

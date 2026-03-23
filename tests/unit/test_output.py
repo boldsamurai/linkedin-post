@@ -68,9 +68,9 @@ class TestCopyToClipboard:
 
 
 class TestSaveToFile:
-    """File save with metadata header."""
+    """File save — plain text only, in posts/ subdirectory."""
 
-    def test_creates_file(self, tmp_path: Path) -> None:
+    def test_creates_file_in_posts_subdir(self, tmp_path: Path) -> None:
         path = save_to_file(
             text="My LinkedIn post",
             source_title="Test source",
@@ -80,8 +80,9 @@ class TestSaveToFile:
         )
         assert path.exists()
         assert path.suffix == ".txt"
+        assert path.parent.name == "posts"
 
-    def test_file_contains_post_text(self, tmp_path: Path) -> None:
+    def test_file_contains_only_post_text(self, tmp_path: Path) -> None:
         path = save_to_file(
             text="My LinkedIn post content",
             source_title="Source",
@@ -90,9 +91,9 @@ class TestSaveToFile:
             directory=tmp_path,
         )
         content = path.read_text(encoding="utf-8")
-        assert "My LinkedIn post content" in content
+        assert content == "My LinkedIn post content"
 
-    def test_file_contains_metadata(self, tmp_path: Path) -> None:
+    def test_no_metadata_in_file(self, tmp_path: Path) -> None:
         path = save_to_file(
             text="Post text",
             source_title="GitHub: cool/repo",
@@ -101,9 +102,8 @@ class TestSaveToFile:
             directory=tmp_path,
         )
         content = path.read_text(encoding="utf-8")
-        assert "Source: GitHub: cool/repo" in content
-        assert "Template: discovery" in content
-        assert "Language: pl" in content
+        assert "Source:" not in content
+        assert "Template:" not in content
 
     def test_filename_has_timestamp(self, tmp_path: Path) -> None:
         path = save_to_file(
