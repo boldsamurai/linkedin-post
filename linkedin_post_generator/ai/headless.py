@@ -19,13 +19,19 @@ def is_headless_available() -> bool:
     return shutil.which(CLAUDE_CMD) is not None
 
 
-def generate_headless(prompt: str, timeout: int = DEFAULT_TIMEOUT) -> str:
+def generate_headless(
+    prompt: str,
+    system_prompt: str = "",
+    timeout: int = DEFAULT_TIMEOUT,
+) -> str:
     """Generate text using Claude Code headless mode.
 
-    Calls `claude -p --output-format json` with the prompt passed via stdin.
+    Calls `claude -p --output-format json` with the prompt via stdin
+    and optional system prompt via --system-prompt flag.
 
     Args:
-        prompt: The full prompt to send to Claude.
+        prompt: The user message to send to Claude.
+        system_prompt: Optional system prompt for role/context setup.
         timeout: Maximum seconds to wait for response.
 
     Returns:
@@ -41,9 +47,13 @@ def generate_headless(prompt: str, timeout: int = DEFAULT_TIMEOUT) -> str:
             "Claude Code CLI not found. Install it from https://claude.ai/code"
         )
 
+    cmd = [CLAUDE_CMD, "-p", "--output-format", "json"]
+    if system_prompt:
+        cmd.extend(["--system-prompt", system_prompt])
+
     try:
         result = subprocess.run(
-            [CLAUDE_CMD, "-p", "--output-format", "json"],
+            cmd,
             input=prompt,
             capture_output=True,
             text=True,
@@ -63,17 +73,7 @@ def generate_headless(prompt: str, timeout: int = DEFAULT_TIMEOUT) -> str:
 
 
 def _parse_response(raw: str) -> str:
-    """Parse JSON response from Claude headless and extract result text.
-
-    Args:
-        raw: Raw stdout from the claude CLI process.
-
-    Returns:
-        The generated text content.
-
-    Raises:
-        AIResponseError: If JSON is invalid or response indicates an error.
-    """
+    """Parse JSON response from Claude headless and extract result text."""
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as exc:
