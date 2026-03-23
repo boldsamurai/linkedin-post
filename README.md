@@ -2,6 +2,8 @@
 
 Interactive CLI tool that generates LinkedIn post drafts from various sources — GitHub repos, articles, or personal notes. AI-assisted, not AI-generated: you always review, refine, and approve before posting.
 
+![Demo](docs/assets/demo.gif)
+
 ## Features
 
 - **Fully interactive** — guided step-by-step flow, no flags to remember
