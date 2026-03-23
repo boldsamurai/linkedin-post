@@ -1,0 +1,18 @@
+"""AI backend — generate LinkedIn post text via Claude Code or Anthropic API."""
+
+from linkedin_post_generator.ai.exceptions import (
+    AIError,
+    AINotAvailableError,
+    AIResponseError,
+    AITimeoutError,
+)
+from linkedin_post_generator.ai.headless import generate_headless, is_headless_available
+
+__all__ = [
+    "AIError",
+    "AINotAvailableError",
+    "AIResponseError",
+    "AITimeoutError",
+    "generate_headless",
+    "is_headless_available",
+]
