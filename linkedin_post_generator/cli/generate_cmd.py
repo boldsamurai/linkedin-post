@@ -8,7 +8,7 @@ from rich.prompt import Prompt
 from linkedin_post_generator.ai import AIError, generate
 from linkedin_post_generator.ai.cleaner import clean_ai_response
 from linkedin_post_generator.cli.init_cmd import init as run_init
-from linkedin_post_generator.config.model import Language, Length, Tone
+from linkedin_post_generator.config.model import AppConfig, Language, Length, Tone
 from linkedin_post_generator.config.reader import config_exists, load_config
 from linkedin_post_generator.fetcher import (
     FetchedContent,
@@ -62,9 +62,7 @@ def generate_cmd() -> None:
         return
 
     template_name = _select_template()
-    language = _select_language(cfg.language)
-    tone = _select_tone(cfg.tone)
-    length = _select_length(cfg.length)
+    language, tone, length = _confirm_or_change_defaults(cfg)
 
     template = get_template(template_name)
     system_prompt, user_message = build_prompt(
@@ -274,6 +272,56 @@ def _build_refinement_prompt(original_post: str, feedback: str) -> str:
         "implies otherwise.\n\n"
         f"Feedback: {feedback}"
     )
+
+
+# --- Config defaults --------------------------------------------------------
+
+
+_LANG_LABELS = {Language.PL: "🇵🇱 Polski", Language.EN: "🇬🇧 English"}
+_TONE_LABELS = {
+    Tone.PROFESSIONAL_CASUAL: "Professional-casual",
+    Tone.TECHNICAL: "Technical",
+    Tone.STORYTELLING: "Storytelling",
+}
+_LENGTH_LABELS = {
+    Length.SHORT: "Short (500-800)",
+    Length.STANDARD: "Standard (800-1300)",
+    Length.LONG: "Long (1300-2000)",
+}
+
+
+def _confirm_or_change_defaults(
+    cfg: AppConfig,
+) -> tuple[Language, Tone, Length]:
+    """Show config defaults and let user confirm or change them.
+
+    Returns:
+        Tuple of (language, tone, length).
+    """
+    language = cfg.language
+    tone = cfg.tone
+    length = cfg.length
+
+    console.print(
+        f"\n  [dim]Ustawienia:[/] {_LANG_LABELS[language]} | "
+        f"{_TONE_LABELS[tone]} | {_LENGTH_LABELS[length]}"
+    )
+
+    change = inquirer.select(
+        message="Zmienić ustawienia?",
+        choices=[
+            {"name": "Nie, generuj →", "value": False},
+            {"name": "Tak, zmień", "value": True},
+        ],
+        default=False,
+    ).execute()
+
+    if change:
+        language = _select_language(language)
+        tone = _select_tone(tone)
+        length = _select_length(length)
+
+    return language, tone, length
 
 
 # --- Source input -----------------------------------------------------------
