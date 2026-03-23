@@ -93,6 +93,34 @@ class TestGenerateHeadlessHappyPath:
         args = mock_run.call_args.args[0]
         assert args == ["claude", "-p", "--output-format", "json"]
 
+    def test_includes_system_prompt_flag(self) -> None:
+        with (
+            patch("shutil.which", return_value="/usr/bin/claude"),
+            patch("subprocess.run") as mock_run,
+        ):
+            mock_run.return_value = _make_completed_process(
+                stdout=json.dumps(SAMPLE_RESPONSE)
+            )
+            generate_headless("user msg", system_prompt="Be an editor")
+
+        args = mock_run.call_args.args[0]
+        assert "--system-prompt" in args
+        idx = args.index("--system-prompt")
+        assert args[idx + 1] == "Be an editor"
+
+    def test_no_system_prompt_flag_when_empty(self) -> None:
+        with (
+            patch("shutil.which", return_value="/usr/bin/claude"),
+            patch("subprocess.run") as mock_run,
+        ):
+            mock_run.return_value = _make_completed_process(
+                stdout=json.dumps(SAMPLE_RESPONSE)
+            )
+            generate_headless("user msg")
+
+        args = mock_run.call_args.args[0]
+        assert "--system-prompt" not in args
+
     def test_uses_shell_false(self) -> None:
         with (
             patch("shutil.which", return_value="/usr/bin/claude"),

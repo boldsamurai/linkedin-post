@@ -58,7 +58,8 @@ def generate_cmd() -> None:
         return
 
     # Dedup check
-    _check_dedup(content.url)
+    if not _check_dedup(content.url):
+        return
 
     template_name = _select_template()
     language = _select_language(cfg.language)
@@ -129,21 +130,62 @@ def generate_cmd() -> None:
 # --- History ----------------------------------------------------------------
 
 
-def _check_dedup(url: str) -> None:
-    """Warn if this source URL was already used in history."""
+def _check_dedup(url: str) -> bool:
+    """Check if source URL was already used. Returns False to abort.
+
+    Returns:
+        True to continue, False to abort generation.
+    """
     if not url:
-        return
+        return True
     try:
         store = get_store()
         existing = store.find_by_url(url)
-        if existing:
-            date = existing.created_at.strftime("%Y-%m-%d")
-            console.print(
-                f"[yellow]⚠️ Ten URL był już użyty {date} "
-                f"(szablon: {existing.template})[/]"
+        if not existing:
+            return True
+
+        date = existing.created_at.strftime("%Y-%m-%d")
+        console.print(
+            f"\n[yellow]⚠️ Ten URL był już użyty {date} "
+            f"(szablon: {existing.template})[/]"
+        )
+
+        action = inquirer.select(
+            message="Co robimy?",
+            choices=[
+                {"name": "Kontynuuj mimo to", "value": "continue"},
+                {
+                    "name": "Pokaż istniejący post",
+                    "value": "show",
+                },
+                {"name": "Anuluj", "value": "cancel"},
+            ],
+        ).execute()
+
+        if action == "cancel":
+            return False
+
+        if action == "show":
+            from linkedin_post_generator.output import display_post
+
+            display_post(
+                text=existing.post_text,
+                template_label=existing.template,
+                language=existing.language,
             )
+            # After showing, ask again
+            proceed = inquirer.select(
+                message="Generować nowy post z tego samego URL?",
+                choices=[
+                    {"name": "Tak, generuj nowy", "value": "continue"},
+                    {"name": "Nie, anuluj", "value": "cancel"},
+                ],
+            ).execute()
+            return proceed == "continue"
+
+        return True  # "continue"
     except Exception:
-        pass  # History DB issues shouldn't block generation
+        return True  # DB issues shouldn't block
 
 
 def _save_to_history(

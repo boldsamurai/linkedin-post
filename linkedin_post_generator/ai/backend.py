@@ -86,4 +86,6 @@ def generate(
             timeout=timeout,
         )
 
-    return generate_headless(prompt=prompt, timeout=timeout)
+    return generate_headless(
+        prompt=prompt, system_prompt=system_prompt, timeout=timeout
+    )

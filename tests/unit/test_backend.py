@@ -97,7 +97,9 @@ class TestGenerate:
             result = generate("Write a post", backend=AIBackend.HEADLESS)
 
         assert result == "Headless post"
-        mock_hl.assert_called_once_with(prompt="Write a post", timeout=120)
+        mock_hl.assert_called_once_with(
+            prompt="Write a post", system_prompt="", timeout=120
+        )
 
     def test_auto_dispatches_to_api_when_available(self) -> None:
         with (
