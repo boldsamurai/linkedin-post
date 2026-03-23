@@ -19,6 +19,7 @@ from linkedin_post_generator.fetcher import (
     prompt_for_note,
 )
 from linkedin_post_generator.fetcher.models import SourceType
+from linkedin_post_generator.history import get_store
 from linkedin_post_generator.output import (
     ACTION_EXIT,
     ACTION_NEW,
@@ -55,6 +56,9 @@ def generate_cmd() -> None:
     if content is None:
         return
 
+    # Dedup check
+    _check_dedup(content.url)
+
     template_name = _select_template()
     language = _select_language(cfg.language)
     tone = _select_tone(cfg.tone)
@@ -74,6 +78,9 @@ def generate_cmd() -> None:
     post_text = _generate_post(system_prompt, user_message, cfg.ai_backend)
     if post_text is None:
         return
+
+    # Auto-save to history
+    _save_to_history(content, template_name, language.value, tone.value, post_text)
 
     while True:
         display_post(
@@ -116,6 +123,49 @@ def generate_cmd() -> None:
             if post_text is None:
                 return
             continue
+
+
+# --- History ----------------------------------------------------------------
+
+
+def _check_dedup(url: str) -> None:
+    """Warn if this source URL was already used in history."""
+    if not url:
+        return
+    try:
+        store = get_store()
+        existing = store.find_by_url(url)
+        if existing:
+            date = existing.created_at.strftime("%Y-%m-%d")
+            console.print(
+                f"[yellow]⚠️ Ten URL był już użyty {date} "
+                f"(szablon: {existing.template})[/]"
+            )
+    except Exception:
+        pass  # History DB issues shouldn't block generation
+
+
+def _save_to_history(
+    content: FetchedContent,
+    template_name: str,
+    language: str,
+    tone: str,
+    post_text: str,
+) -> None:
+    """Auto-save generated post to history."""
+    try:
+        store = get_store()
+        store.save(
+            source_type=("url" if content.url else "text"),
+            source_url=content.url,
+            source_text=content.text,
+            template=template_name,
+            language=language,
+            tone=tone,
+            post_text=post_text,
+        )
+    except Exception:
+        pass  # History DB issues shouldn't block generation
 
 
 # --- AI generation ----------------------------------------------------------
