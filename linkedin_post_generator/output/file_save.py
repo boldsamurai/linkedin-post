@@ -1,6 +1,6 @@
 """File save — write post to timestamped .txt file."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from rich.console import Console
@@ -30,7 +30,7 @@ def save_to_file(
     if directory is None:
         directory = Path.cwd()
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     timestamp = now.strftime("%Y-%m-%d-%H%M%S")
     filename = f"linkedin-post-{timestamp}.txt"
     filepath = directory / filename

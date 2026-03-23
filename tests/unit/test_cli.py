@@ -114,19 +114,21 @@ class TestAutoInit:
     """Tests for auto-init on generate."""
 
     @patch("linkedin_post_generator.cli.generate_cmd._source_input", return_value=None)
+    @patch("linkedin_post_generator.cli.generate_cmd.load_config")
     @patch("linkedin_post_generator.cli.generate_cmd.config_exists")
     def test_generate_skips_init_when_config_exists(
-        self, mock_exists, mock_source_input
+        self, mock_exists, mock_load, mock_source_input
     ):
         mock_exists.return_value = True
         result = runner.invoke(app, ["generate"])
         assert result.exit_code == 0
 
     @patch("linkedin_post_generator.cli.generate_cmd._source_input", return_value=None)
+    @patch("linkedin_post_generator.cli.generate_cmd.load_config")
     @patch("linkedin_post_generator.cli.generate_cmd.run_init")
     @patch("linkedin_post_generator.cli.generate_cmd.config_exists")
     def test_generate_triggers_init_when_no_config(
-        self, mock_exists, mock_init, mock_source_input
+        self, mock_exists, mock_init, mock_load, mock_source_input
     ):
         mock_exists.return_value = False
         result = runner.invoke(app, ["generate"])
