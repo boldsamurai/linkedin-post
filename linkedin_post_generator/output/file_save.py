@@ -7,6 +7,8 @@ from rich.console import Console
 
 console = Console()
 
+POSTS_DIR = "posts"
+
 
 def save_to_file(
     text: str,
@@ -15,14 +17,14 @@ def save_to_file(
     language: str,
     directory: Path | None = None,
 ) -> Path:
-    """Save post text to a timestamped .txt file with metadata header.
+    """Save post text to a timestamped .txt file in the posts/ subdirectory.
 
     Args:
-        text: The generated post text.
-        source_title: Title/summary of the source material.
-        template_name: Template used for generation.
-        language: Language code (e.g. "pl", "en").
-        directory: Target directory (defaults to cwd).
+        text: The generated post text (plain text only).
+        source_title: Unused, kept for API compatibility.
+        template_name: Unused, kept for API compatibility.
+        language: Unused, kept for API compatibility.
+        directory: Base directory (defaults to cwd). Posts go into posts/ subdir.
 
     Returns:
         Path to the saved file.
@@ -30,21 +32,15 @@ def save_to_file(
     if directory is None:
         directory = Path.cwd()
 
+    posts_dir = directory / POSTS_DIR
+    posts_dir.mkdir(exist_ok=True)
+
     now = datetime.now(tz=UTC)
     timestamp = now.strftime("%Y-%m-%d-%H%M%S")
     filename = f"linkedin-post-{timestamp}.txt"
-    filepath = directory / filename
+    filepath = posts_dir / filename
 
-    header = (
-        f"# LinkedIn Post Draft\n"
-        f"# Date: {now.strftime('%Y-%m-%d %H:%M:%S UTC')}\n"
-        f"# Source: {source_title}\n"
-        f"# Template: {template_name}\n"
-        f"# Language: {language}\n"
-        f"#\n\n"
-    )
-
-    filepath.write_text(header + text, encoding="utf-8")
+    filepath.write_text(text, encoding="utf-8")
 
     console.print(f"[green]✅ Post zapisany: {filepath}[/]")
     return filepath

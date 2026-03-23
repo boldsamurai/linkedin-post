@@ -6,8 +6,8 @@ from linkedin_post_generator.templates.registry import register
 DISCOVERY = register(
     PostTemplate(
         name="discovery",
-        label="Discovery",
-        description="I found this, here's why it matters to you",
+        label="Odkrycie",
+        description="Znalazłem coś ciekawego — oto dlaczego warto to znać",
         instructions=(
             "Write a post about discovering something valuable — a tool, library, "
             "project, or resource.\n\n"
@@ -26,8 +26,8 @@ DISCOVERY = register(
 OPINION = register(
     PostTemplate(
         name="opinion",
-        label="Opinion",
-        description="Here's my take, agree or disagree",
+        label="Opinia",
+        description="Moje zdanie — zgadzasz się czy nie?",
         instructions=(
             "Write an opinion post that takes a clear stance on a topic.\n\n"
             "Structure:\n"
@@ -46,7 +46,7 @@ TIL = register(
     PostTemplate(
         name="til",
         label="TIL",
-        description="Short, punchy technical insight",
+        description="Krótki, konkretny insight techniczny",
         instructions=(
             "Write a 'Today I Learned' post — a concise technical insight.\n\n"
             "Structure:\n"
@@ -63,8 +63,8 @@ TIL = register(
 PROJECT_SHOWCASE = register(
     PostTemplate(
         name="project-showcase",
-        label="Project Showcase",
-        description="I built this, here's the journey",
+        label="Prezentacja projektu",
+        description="Zbudowałem to — oto historia",
         instructions=(
             "Write a post showcasing a project — yours or one you contributed to.\n\n"
             "Structure:\n"
@@ -82,8 +82,8 @@ PROJECT_SHOWCASE = register(
 ARTICLE_REACTION = register(
     PostTemplate(
         name="article-reaction",
-        label="Article Reaction",
-        description="Read this, here's what stood out",
+        label="Reakcja na artykuł",
+        description="Przeczytałem to — oto co mnie uderzyło",
         instructions=(
             "Write a reaction post about an article, blog post, or piece of content "
             "you read.\n\n"
