@@ -6,6 +6,7 @@ from rich.panel import Panel
 from rich.prompt import Prompt
 
 from linkedin_post_generator.ai import AIError, generate
+from linkedin_post_generator.ai.cleaner import clean_ai_response
 from linkedin_post_generator.cli.init_cmd import init as run_init
 from linkedin_post_generator.config.model import Language, Length, Tone
 from linkedin_post_generator.config.reader import config_exists, load_config
@@ -183,11 +184,12 @@ def _generate_post(
     """
     try:
         with console.status("🤖 Generowanie posta..."):
-            return generate(
+            raw = generate(
                 prompt=user_message,
                 system_prompt=system_prompt,
                 backend=backend,
             )
+        return clean_ai_response(raw)
     except AIError as exc:
         console.print(
             Panel(
