@@ -50,3 +50,6 @@ htmlcov/
 .coverage
 .uv/
 .code-review-graph/
+
+# MetaForge-P (config generator, bundled clone)
+.metaforge-p/
