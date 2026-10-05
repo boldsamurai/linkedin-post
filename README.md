@@ -15,7 +15,17 @@ Interactive CLI tool that generates LinkedIn post drafts from various sources �
 - **History tracking** — SQLite-backed history with dedup, search, and management
 - **Cross-platform** — Linux, macOS, Windows
 
-## Quick Start
+## Installation
+
+Install as an isolated CLI app with [pipx](https://pipx.pypa.io/):
+
+```bash
+pipx install git+https://github.com/boldsamurai/linkedin-post.git
+```
+
+Then run `linkedin-post init` and `linkedin-post generate` directly.
+
+## Quick Start (from source)
 
 ```bash
 # Install
@@ -62,6 +72,10 @@ length = "standard"
 hashtags = ["#Python", "#SoftwareEngineering"]
 ```
 
+**Local override** — a `config.toml` in the current working directory takes precedence over the global one. Only the fields it defines are overridden; everything else comes from the global config, then built-in defaults.
+
+The post history database lives next to the global config: `~/.config/linkedin-post/history.db`.
+
 ## AI Backend
 
 The tool supports two AI backends (auto-detected):
@@ -72,7 +86,8 @@ The tool supports two AI backends (auto-detected):
 ## Tech Stack
 
 - Python 3.12+ with [uv](https://docs.astral.sh/uv/)
-- [Typer](https://typer.tiangolo.com/) + [Rich](https://rich.readthedocs.io/) (interactive CLI)
+- [Typer](https://typer.tiangolo.com/) + [Rich](https://rich.readthedocs.io/) + [InquirerPy](https://github.com/kazhala/InquirerPy) (interactive CLI)
+- [pyperclip](https://github.com/asweigart/pyperclip) (cross-platform clipboard)
 - [Claude Code](https://claude.ai/code) headless / [Anthropic SDK](https://docs.anthropic.com/)
 - [httpx](https://www.python-httpx.org/) + [readability-lxml](https://github.com/buriy/python-readability) (content extraction)
 - [Pydantic](https://docs.pydantic.dev/) (config validation)
