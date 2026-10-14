@@ -21,6 +21,7 @@ dependencies = [
     "anthropic",
     "platformdirs",
     "tomli-w",
+    "feedparser>=6.0.14",
 ]
 
 [project.scripts]

@@ -1,8 +1,9 @@
 """Pydantic config model with enums and sensible defaults."""
 
 from enum import StrEnum
+from urllib.parse import urlparse
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class Language(StrEnum):
@@ -51,3 +52,17 @@ class AppConfig(BaseModel):
         default=AIBackend.AUTO,
         description="AI backend: auto, headless (Claude CLI), or api",
     )
+    feeds: list[str] = Field(
+        default_factory=list,
+        description="RSS/Atom feed URLs used by the suggest command",
+    )
+
+    @field_validator("feeds")
+    @classmethod
+    def _validate_feed_urls(cls, feeds: list[str]) -> list[str]:
+        """Reject feed entries that are not absolute http(s) URLs."""
+        for url in feeds:
+            parsed = urlparse(url)
+            if parsed.scheme not in ("http", "https") or not parsed.netloc:
+                raise ValueError(f"Feed must be an http(s) URL: {url!r}")
+        return feeds

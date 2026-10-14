@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Python Weekly Notes</title>
+    <link>https://python.example.com/</link>
+    <description>Notes about Python</description>
+    <item>
+      <title>Older post about asyncio</title>
+      <link>https://python.example.com/asyncio</link>
+      <pubDate>Mon, 05 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Newest post about uv</title>
+      <link>https://python.example.com/uv</link>
+      <pubDate>Mon, 12 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Undated post</title>
+      <link>https://python.example.com/undated</link>
+    </item>
+    <item>
+      <title>Item without a link</title>
+      <pubDate>Tue, 13 Oct 2026 08:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

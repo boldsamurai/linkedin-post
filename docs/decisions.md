@@ -25,3 +25,8 @@ Append-only. Newest at the bottom. Each entry: date, decision, why.
 - **Decision:** custom templates stay out of `TEMPLATES`; `list_templates()` reads `templates_dir()` on every call, and `get_template()` returns a built-in without reading the directory, so a broken custom file never blocks a built-in template that's already selected.
 - **Why:** no cache to invalidate, edits to template files apply on the next run, and the built-in clash check stays a plain lookup in `TEMPLATES`.
 - **Given up:** registering custom templates once at import (cheaper per call, but an import-time `TemplateError` and a mutable global); failing `get_template()` for built-ins too when any custom file is broken (stricter fail-fast).
+## 2026-10-14 — Lane B takes A1's contract by cherry-pick (pending approval)
+
+- **Decision:** lane B cherry-picks lane A's contract commit `2f5a2b2` (`TemplateError`, `CUSTOM_BADGE`, `is_custom`) so `run_generate` can catch `TemplateError` and the branch's tests run; a preset source that fails to fetch aborts the flow (error panel) instead of falling back to the source prompt; the moved selection helpers lose their `_` prefix because `generate_cmd.py` now imports them from `cli/selections.py`.
+- **Why:** lane rules forbid merging another lane's branch, and B3 cannot compile against `TemplateError` without it; the identical commit merges cleanly once the queue lands A before B. Aborting keeps `suggest` honest — the user picked that entry, a silent switch to a free-text prompt would be confusing.
+- **Given up:** waiting for A to merge first (blocks the lane), a local stand-in exception class (two classes, one wrong), falling back to the prompt after a failed preset fetch.

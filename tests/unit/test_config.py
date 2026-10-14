@@ -181,3 +181,41 @@ class TestConfigReader:
         assert config_dir().is_absolute()
         assert global_config_path().name == "config.toml"
         assert history_db_path().name == "history.db"
+
+
+class TestFeedsConfig:
+    """Tests for the feeds list used by the suggest command."""
+
+    def test_feeds_default_empty(self):
+        assert AppConfig().feeds == []
+
+    def test_feeds_read_from_toml(self, tmp_path, monkeypatch):
+        global_file = tmp_path / "global.toml"
+        feeds = ["https://example.com/rss.xml", "http://blog.example.org/atom"]
+        with global_file.open("wb") as f:
+            tomli_w.dump({"feeds": feeds}, f)
+
+        monkeypatch.setattr(
+            "linkedin_post_generator.config.reader.global_config_path",
+            lambda: global_file,
+        )
+        monkeypatch.setattr(
+            "linkedin_post_generator.config.reader.local_config_path",
+            lambda: None,
+        )
+        assert load_config().feeds == feeds
+
+    @pytest.mark.parametrize(
+        "bad_url",
+        ["ftp://example.com/feed", "example.com/rss", "https://", "not a url"],
+    )
+    def test_feeds_invalid_url_rejected(self, bad_url):
+        with pytest.raises(ValueError, match="Feed must be an http"):
+            AppConfig(feeds=[bad_url])
+
+    def test_feeds_roundtrip_through_writer(self, tmp_path):
+        target = tmp_path / "config.toml"
+        save_config(AppConfig(feeds=["https://example.com/rss"]), path=target)
+
+        with target.open("rb") as f:
+            assert tomllib.load(f)["feeds"] == ["https://example.com/rss"]
