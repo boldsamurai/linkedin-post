@@ -2,13 +2,17 @@
 
 from InquirerPy import inquirer
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.prompt import Prompt
 
 from linkedin_post_generator.ai import AIError, generate
 from linkedin_post_generator.ai.cleaner import clean_ai_response
 from linkedin_post_generator.cli.init_cmd import init as run_init
-from linkedin_post_generator.config.model import AppConfig, Language, Length, Tone
+from linkedin_post_generator.cli.selections import (
+    confirm_or_change_defaults,
+    select_template,
+)
 from linkedin_post_generator.config.reader import config_exists, load_config
 from linkedin_post_generator.fetcher import (
     FetchedContent,
@@ -28,7 +32,7 @@ from linkedin_post_generator.output import (
     display_post,
     post_action_menu,
 )
-from linkedin_post_generator.templates import build_prompt, get_template, list_templates
+from linkedin_post_generator.templates import TemplateError, build_prompt, get_template
 
 console = Console()
 
@@ -46,6 +50,24 @@ _SPINNER_MESSAGES: dict[SourceType, str] = {
 
 def generate_cmd() -> None:
     """Interactive post generation flow."""
+    run_generate()
+
+
+def run_generate(source_input: str | None = None) -> None:
+    """Run the generate flow, optionally starting from a preset source.
+
+    Args:
+        source_input: URL or topic to use instead of prompting for one.
+            Fetch, preview and dedup check still run for it.
+    """
+    try:
+        _generate_flow(source_input)
+    except TemplateError as exc:
+        _show_template_error(exc)
+
+
+def _generate_flow(source_input: str | None) -> None:
+    """Source → template → settings → generation → action loop."""
     if not config_exists():
         console.print("[cyan]Pierwsza konfiguracja — uruchamiam wizard...[/]\n")
         run_init()
@@ -53,7 +75,7 @@ def generate_cmd() -> None:
 
     cfg = load_config()
 
-    content = _source_input()
+    content = _source_input(source_input)
     if content is None:
         return
 
@@ -61,8 +83,8 @@ def generate_cmd() -> None:
     if not _check_dedup(content.url):
         return
 
-    template_name = _select_template()
-    language, tone, length = _confirm_or_change_defaults(cfg)
+    template_name = select_template()
+    language, tone, length = confirm_or_change_defaults(cfg)
 
     template = get_template(template_name)
     system_prompt, user_message = build_prompt(
@@ -274,61 +296,21 @@ def _build_refinement_prompt(original_post: str, feedback: str) -> str:
     )
 
 
-# --- Config defaults --------------------------------------------------------
-
-
-_LANG_LABELS = {Language.PL: "🇵🇱 Polski", Language.EN: "🇬🇧 English"}
-_TONE_LABELS = {
-    Tone.PROFESSIONAL_CASUAL: "Professional-casual",
-    Tone.TECHNICAL: "Technical",
-    Tone.STORYTELLING: "Storytelling",
-}
-_LENGTH_LABELS = {
-    Length.SHORT: "Short (500-800)",
-    Length.STANDARD: "Standard (800-1300)",
-    Length.LONG: "Long (1300-2000)",
-}
-
-
-def _confirm_or_change_defaults(
-    cfg: AppConfig,
-) -> tuple[Language, Tone, Length]:
-    """Show config defaults and let user confirm or change them.
-
-    Returns:
-        Tuple of (language, tone, length).
-    """
-    language = cfg.language
-    tone = cfg.tone
-    length = cfg.length
-
-    console.print(
-        f"\n  [dim]Ustawienia:[/] {_LANG_LABELS[language]} | "
-        f"{_TONE_LABELS[tone]} | {_LENGTH_LABELS[length]}"
-    )
-
-    change = inquirer.select(
-        message="Zmienić ustawienia?",
-        choices=[
-            {"name": "Nie, generuj →", "value": False},
-            {"name": "Tak, zmień", "value": True},
-        ],
-        default=False,
-    ).execute()
-
-    if change:
-        language = _select_language(language)
-        tone = _select_tone(tone)
-        length = _select_length(length)
-
-    return language, tone, length
-
-
 # --- Source input -----------------------------------------------------------
 
 
-def _source_input() -> FetchedContent | None:
-    """Interactive source input step."""
+def _source_input(preset: str | None = None) -> FetchedContent | None:
+    """Interactive source input step.
+
+    Args:
+        preset: Source chosen elsewhere (e.g. by ``suggest``); skips the prompt.
+
+    Returns:
+        Fetched content, or None when a preset source cannot be fetched.
+    """
+    if preset is not None:
+        return _fetch_and_preview(preset.strip())
+
     while True:
         user_input = Prompt.ask("\n[cyan]O czym chcesz napisać?[/] (URL lub temat)")
 
@@ -336,16 +318,23 @@ def _source_input() -> FetchedContent | None:
             console.print("[yellow]Podaj URL lub temat.[/]")
             continue
 
-        source_type = detect_source_type(user_input)
+        content = _fetch_and_preview(user_input.strip())
+        if content is not None:
+            return content
 
-        try:
-            content = _fetch_source(user_input.strip(), source_type)
-        except FetchError as exc:
-            _show_error(str(exc))
-            continue
 
-        _show_source_preview(content, source_type)
-        return content
+def _fetch_and_preview(user_input: str) -> FetchedContent | None:
+    """Fetch a source and show its preview; None when the fetch failed."""
+    source_type = detect_source_type(user_input)
+
+    try:
+        content = _fetch_source(user_input, source_type)
+    except FetchError as exc:
+        _show_error(str(exc))
+        return None
+
+    _show_source_preview(content, source_type)
+    return content
 
 
 def _fetch_source(user_input: str, source_type: SourceType) -> FetchedContent:
@@ -391,71 +380,14 @@ def _show_error(message: str) -> None:
     )
 
 
-# --- Selection steps --------------------------------------------------------
-
-
-def _select_template() -> str:
-    """Interactive template selection with InquirerPy."""
-    templates = list_templates()
-    choices = [
-        {"name": f"{t.label} — {t.description}", "value": t.name} for t in templates
-    ]
-
-    return inquirer.select(
-        message="Szablon posta:",
-        choices=choices,
-        default=templates[0].name if templates else None,
-    ).execute()
-
-
-def _select_language(default: Language) -> Language:
-    """Interactive language selection with config default pre-selected."""
-    value = inquirer.select(
-        message="Język posta:",
-        choices=[
-            {"name": "🇵🇱 Polski", "value": Language.PL.value},
-            {"name": "🇬🇧 English", "value": Language.EN.value},
-        ],
-        default=default.value,
-    ).execute()
-    return Language(value)
-
-
-def _select_tone(default: Tone) -> Tone:
-    """Interactive tone selection with config default pre-selected."""
-    value = inquirer.select(
-        message="Ton posta:",
-        choices=[
-            {
-                "name": "Professional-casual — ekspert, ale przystępny",
-                "value": Tone.PROFESSIONAL_CASUAL.value,
-            },
-            {
-                "name": "Technical — precyzyjny, oparty na danych",
-                "value": Tone.TECHNICAL.value,
-            },
-            {
-                "name": "Storytelling — narracyjny, osobisty",
-                "value": Tone.STORYTELLING.value,
-            },
-        ],
-        default=default.value,
-    ).execute()
-    return Tone(value)
-
-
-def _select_length(default: Length) -> Length:
-    """Interactive length selection with config default pre-selected."""
-    value = inquirer.select(
-        message="Długość posta:",
-        choices=[
-            {"name": "Short (500-800 znaków)", "value": Length.SHORT.value},
-            {
-                "name": "Standard (800-1300 znaków)",
-                "value": Length.STANDARD.value,
-            },
-            {"name": "Long (1300-2000 znaków)", "value": Length.LONG.value},
-        ],
-        default=default.value,
-    ).execute()
-    return Length(value)
+def _show_template_error(exc: TemplateError) -> None:
+    """Show a broken custom template file with a fix instruction."""
+    console.print(
+        Panel(
+            f"Nieprawidłowy plik szablonu: {escape(str(exc.path))}\n"
+            f"{escape(exc.reason)}\n\n"
+            "[dim]Popraw lub usuń ten plik i uruchom polecenie ponownie.[/]",
+            title="❌ Error",
+            border_style="red bold",
+        )
+    )
