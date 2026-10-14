@@ -162,3 +162,19 @@ def test_fetch_feed_entries_raises_when_all_fail(httpx_mock):
 
 def test_fetch_feed_entries_empty_list_returns_empty_result():
     assert fetch_feed_entries([]) == FeedFetchResult(entries=[], failed_feeds=[])
+
+
+def test_fetch_feed_entries_skips_non_http_links(httpx_mock):
+    rss = (
+        b'<?xml version="1.0"?><rss version="2.0"><channel><title>T</title>'
+        b"<item><title>Local</title><link>file:///etc/passwd</link></item>"
+        b"<item><title>Mail</title><link>mailto:someone@example.com</link></item>"
+        b"<item><title>Bad</title><link>http://[</link></item>"
+        b"<item><title>Web</title><link>https://python.example.com/web</link></item>"
+        b"</channel></rss>"
+    )
+    httpx_mock.add_response(url=RSS_URL, content=rss)
+
+    result = fetch_feed_entries([RSS_URL])
+
+    assert [e.url for e in result.entries] == ["https://python.example.com/web"]

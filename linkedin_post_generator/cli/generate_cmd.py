@@ -362,9 +362,10 @@ def _show_source_preview(content: FetchedContent, source_type: SourceType) -> No
     if len(content.text) > 200:
         preview_text += "..."
 
-    body = f"[bold]{content.title}[/]\n\n[dim]{preview_text}[/]"
+    # Titles and text come from remote pages; never let them act as Rich markup.
+    body = f"[bold]{escape(content.title)}[/]\n\n[dim]{escape(preview_text)}[/]"
     if content.url:
-        body += f"\n\n[underline blue]{content.url}[/]"
+        body += f"\n\n[underline blue]{escape(content.url)}[/]"
 
     console.print(Panel(body, title=f"📄 {label}", border_style="cyan"))
 

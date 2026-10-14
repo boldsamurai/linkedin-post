@@ -2,6 +2,7 @@
 
 import calendar
 from datetime import UTC, datetime
+from urllib.parse import urlparse
 
 import feedparser
 
@@ -64,7 +65,7 @@ def _fetch_single_feed(url: str, limit: int) -> list[FeedEntry]:
             feed_title=feed_title,
         )
         for entry in parsed.entries
-        if entry.get("link")
+        if _is_http_url(entry.get("link", ""))
     ]
     # Judge by the entries we keep: a lenient parse of broken XML can yield
     # link-less fragments. An empty ``version`` means no RSS/Atom format was
@@ -85,3 +86,12 @@ def _published_at(entry: feedparser.FeedParserDict) -> datetime | None:
 def _sort_key(entry: FeedEntry) -> datetime:
     """Sort key placing undated entries after every dated one."""
     return entry.published or _OLDEST
+
+
+def _is_http_url(link: str) -> bool:
+    """Keep only links the generate flow can fetch (no javascript:, file:, ...)."""
+    try:
+        return urlparse(link).scheme in ("http", "https")
+    except ValueError:
+        # e.g. "http://[" — a malformed link skips the entry, not the whole run
+        return False

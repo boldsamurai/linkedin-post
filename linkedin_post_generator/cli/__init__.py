@@ -7,6 +7,7 @@ from linkedin_post_generator.cli.config_cmd import config
 from linkedin_post_generator.cli.generate_cmd import generate_cmd
 from linkedin_post_generator.cli.history_cmd import history_app
 from linkedin_post_generator.cli.init_cmd import init
+from linkedin_post_generator.cli.suggest_cmd import suggest
 
 app = typer.Typer(
     name="linkedin-post",
@@ -38,4 +39,5 @@ def main(
 app.command()(init)
 app.command(name="generate")(generate_cmd)
 app.command()(config)
+app.command()(suggest)
 app.add_typer(history_app, name="history")
