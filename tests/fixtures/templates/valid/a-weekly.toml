@@ -1,0 +1,6 @@
+name = "weekly-digest"
+label = "Weekly digest"
+description = "Three links worth reading this week"
+instructions = """
+Summarise the source as one of three weekly picks.
+"""

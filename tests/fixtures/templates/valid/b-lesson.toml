@@ -1,0 +1,6 @@
+name = "lesson-learned"
+label = "Lesson learned"
+description = "A mistake and what it taught me"
+instructions = """
+Describe a mistake, its cost and the lesson.
+"""
