@@ -20,6 +20,11 @@ Append-only. Newest at the bottom. Each entry: date, decision, why.
 - **Why:** the menu picks up custom templates without touching `cli/`, which keeps lanes A and B on disjoint files; fail-fast matches the project's error-handling rules.
 - **Given up:** the badge as pure presentation (it also appears in the metadata bar), and skipping a broken file with a warning while the rest keep working.
 
+## 2026-10-14 — Custom templates are read on every lookup, built-ins first (pending approval)
+
+- **Decision:** custom templates stay out of `TEMPLATES`; `list_templates()` reads `templates_dir()` on every call, and `get_template()` returns a built-in without reading the directory, so a broken custom file never blocks a built-in template that's already selected.
+- **Why:** no cache to invalidate, edits to template files apply on the next run, and the built-in clash check stays a plain lookup in `TEMPLATES`.
+- **Given up:** registering custom templates once at import (cheaper per call, but an import-time `TemplateError` and a mutable global); failing `get_template()` for built-ins too when any custom file is broken (stricter fail-fast).
 ## 2026-10-14 — Lane B takes A1's contract by cherry-pick (pending approval)
 
 - **Decision:** lane B cherry-picks lane A's contract commit `2f5a2b2` (`TemplateError`, `CUSTOM_BADGE`, `is_custom`) so `run_generate` can catch `TemplateError` and the branch's tests run; a preset source that fails to fetch aborts the flow (error panel) instead of falling back to the source prompt; the moved selection helpers lose their `_` prefix because `generate_cmd.py` now imports them from `cli/selections.py`.
