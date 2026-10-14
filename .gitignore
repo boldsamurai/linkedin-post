@@ -27,10 +27,8 @@ uv.lock
 .claude/
 .mcp.json
 CLAUDE.md
-TODO.md
 linkedin-post-generator-brief.md
 docs/brief.md
-docs/decisions.md
 
 # Project
 /output/
