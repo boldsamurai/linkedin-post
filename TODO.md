@@ -6,21 +6,6 @@ Tasks for the LinkedIn Post Generator. Format: `.claude/rules/task-tracking.md`.
 
 Two parallel lanes. Lane A starts first; lane B starts once A1 (the `TemplateError` / `is_custom` contract) is merged.
 
-### Lane A — Custom templates
-<!-- lane: id=A; touches=linkedin_post_generator/templates/**, linkedin_post_generator/config/paths.py, tests/unit/test_custom_templates.py, tests/unit/test_templates.py, tests/fixtures/templates/**, docs/custom-templates.md; needs= -->
-- [x] A1 Contract: `PostTemplate.is_custom: bool = False`, `CUSTOM_BADGE = "🧩"` in `templates/models.py`, `TemplateError(path, reason)` in new `templates/exceptions.py` exported from `templates/__init__.py`. Verified by `uv run pytest tests/unit/test_templates.py tests/unit/test_builtins.py` (built-ins unchanged)
-- [x] A2 `templates_dir()` in `config/paths.py` → `config_dir() / "templates"`, not created on read (missing dir = no custom templates); test in `tests/unit/test_custom_templates.py` with a monkeypatched config dir
-- [x] A3 `templates/custom_loader.py`: `load_custom_templates(directory) -> list[PostTemplate]` reads `*.toml` sorted by name, validates `name` (slug `^[a-z0-9-]+$`), `label`, `description`, `instructions` with a Pydantic model, prefixes label with `CUSTOM_BADGE`, sets `is_custom=True`; raises `TemplateError` naming the file on bad TOML, missing/empty field or a name clash with a built-in or another file. Tests: happy path, missing field, bad TOML, clash, missing dir (fixtures in `tests/fixtures/templates/`)
-- [x] A4 Registry integration: `list_templates()` returns built-ins then custom templates from `templates_dir()`, `get_template()` finds custom ones, so `build_prompt()` works with a custom name and the menu shows the badge without touching `cli/`. Tests with a tmp templates dir: order, lookup, `build_prompt` on a custom template
-- [x] A5 `docs/custom-templates.md`: file location, the four fields, a complete example TOML, what happens on a broken file
-
-### Lane B — RSS sources and `suggest`
-<!-- lane: id=B; touches=pyproject.toml, linkedin_post_generator/config/model.py, linkedin_post_generator/fetcher/rss_fetcher.py, linkedin_post_generator/fetcher/models.py, linkedin_post_generator/fetcher/__init__.py, linkedin_post_generator/cli/__init__.py, linkedin_post_generator/cli/generate_cmd.py, linkedin_post_generator/cli/selections.py, linkedin_post_generator/cli/suggest_cmd.py, tests/unit/test_config.py, tests/unit/test_rss_fetcher.py, tests/unit/test_selections.py, tests/unit/test_generate_flow.py, tests/unit/test_suggest_cmd.py, tests/fixtures/feeds/**; needs=A:A1 -->
-- [x] B1 `feeds: list[str]` in `AppConfig` (default empty, each item validated as an http(s) URL) + `uv add feedparser`. Tests in `tests/unit/test_config.py`: feeds read from TOML, invalid URL rejected, default `[]`
-- [x] B2 `fetcher/rss_fetcher.py`: `fetch_feed_entries(feed_urls, limit_per_feed=10) -> FeedFetchResult(entries, failed_feeds)`; `FeedEntry` frozen dataclass (title, url, published, feed_title) in `fetcher/models.py`; httpx downloads, feedparser parses the bytes, entries newest first; one broken feed lands in `failed_feeds`, `FetchError` only when all fail. Tests (pytest-httpx, fixtures in `tests/fixtures/feeds/`): RSS 2.0, Atom, one 500 + one OK, malformed XML
-- [x] B3 Refactor `cli/generate_cmd.py` (461 lines, over the 400 limit): move `_select_*` and `_confirm_or_change_defaults` to `cli/selections.py`; `run_generate(source_input: str | None = None)` skips the source prompt when given (fetch, preview and dedup still run); catch `TemplateError` at the command boundary → red "❌ Error" panel with the file path. Tests: `test_selections.py` green after the move, preset source skips the prompt, `TemplateError` shows the panel with no traceback
-- [x] B4 `cli/suggest_cmd.py` registered as `linkedin-post suggest`: no feeds → yellow hint with the `feeds = [...]` line for `config.toml`; spinner "🔗 Pobieranie feedów..."; ⚠️ per failed feed; InquirerPy menu "title — feed · date" with "✓ użyty" for URLs found by `HistoryStore.find_by_url` + "Anuluj"; selection → `run_generate(url)`. CliRunner tests: no feeds, selection passes the URL, cancel exits cleanly
-
 ## POST-MVP
 
 ### LinkedIn API Integration
@@ -60,6 +45,19 @@ Two parallel lanes. Lane A starts first; lane B starts once A1 (the `TemplateErr
   - Use Pillow or external service
 
 ## Done
+
+### Lane A — Custom templates
+- [x] A1 Contract: `PostTemplate.is_custom: bool = False`, `CUSTOM_BADGE = "🧩"` in `templates/models.py`, `TemplateError(path, reason)` in new `templates/exceptions.py` exported from `templates/__init__.py`. Verified by `uv run pytest tests/unit/test_templates.py tests/unit/test_builtins.py` (built-ins unchanged)
+- [x] A2 `templates_dir()` in `config/paths.py` → `config_dir() / "templates"`, not created on read (missing dir = no custom templates); test in `tests/unit/test_custom_templates.py` with a monkeypatched config dir
+- [x] A3 `templates/custom_loader.py`: `load_custom_templates(directory) -> list[PostTemplate]` reads `*.toml` sorted by name, validates `name` (slug `^[a-z0-9-]+$`), `label`, `description`, `instructions` with a Pydantic model, prefixes label with `CUSTOM_BADGE`, sets `is_custom=True`; raises `TemplateError` naming the file on bad TOML, missing/empty field or a name clash with a built-in or another file. Tests: happy path, missing field, bad TOML, clash, missing dir (fixtures in `tests/fixtures/templates/`)
+- [x] A4 Registry integration: `list_templates()` returns built-ins then custom templates from `templates_dir()`, `get_template()` finds custom ones, so `build_prompt()` works with a custom name and the menu shows the badge without touching `cli/`. Tests with a tmp templates dir: order, lookup, `build_prompt` on a custom template
+- [x] A5 `docs/custom-templates.md`: file location, the four fields, a complete example TOML, what happens on a broken file
+
+### Lane B — RSS sources and `suggest`
+- [x] B1 `feeds: list[str]` in `AppConfig` (default empty, each item validated as an http(s) URL) + `uv add feedparser`. Tests in `tests/unit/test_config.py`: feeds read from TOML, invalid URL rejected, default `[]`
+- [x] B2 `fetcher/rss_fetcher.py`: `fetch_feed_entries(feed_urls, limit_per_feed=10) -> FeedFetchResult(entries, failed_feeds)`; `FeedEntry` frozen dataclass (title, url, published, feed_title) in `fetcher/models.py`; httpx downloads, feedparser parses the bytes, entries newest first; one broken feed lands in `failed_feeds`, `FetchError` only when all fail. Tests (pytest-httpx, fixtures in `tests/fixtures/feeds/`): RSS 2.0, Atom, one 500 + one OK, malformed XML
+- [x] B3 Refactor `cli/generate_cmd.py` (461 lines, over the 400 limit): move `_select_*` and `_confirm_or_change_defaults` to `cli/selections.py`; `run_generate(source_input: str | None = None)` skips the source prompt when given (fetch, preview and dedup still run); catch `TemplateError` at the command boundary → red "❌ Error" panel with the file path. Tests: `test_selections.py` green after the move, preset source skips the prompt, `TemplateError` shows the panel with no traceback
+- [x] B4 `cli/suggest_cmd.py` registered as `linkedin-post suggest`: no feeds → yellow hint with the `feeds = [...]` line for `config.toml`; spinner "🔗 Pobieranie feedów..."; ⚠️ per failed feed; InquirerPy menu "title — feed · date" with "✓ użyty" for URLs found by `HistoryStore.find_by_url` + "Anuluj"; selection → `run_generate(url)`. CliRunner tests: no feeds, selection passes the URL, cancel exits cleanly
 
 ### Project Setup
 - [x] Initialize git repo
