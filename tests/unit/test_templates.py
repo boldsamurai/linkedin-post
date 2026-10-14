@@ -1,9 +1,13 @@
 """Tests for post template system — models, registry, and builder."""
 
+from pathlib import Path
+
 import pytest
 
+import linkedin_post_generator.templates as templates_pkg
 from linkedin_post_generator.config.model import Language, Length, Tone
 from linkedin_post_generator.templates.builder import build_prompt
+from linkedin_post_generator.templates.exceptions import TemplateError
 from linkedin_post_generator.templates.models import PostTemplate
 from linkedin_post_generator.templates.registry import (
     TEMPLATES,
@@ -44,6 +48,32 @@ class TestPostTemplate:
     def test_frozen(self) -> None:
         with pytest.raises(AttributeError):
             SAMPLE_TEMPLATE.name = "modified"  # type: ignore[misc]
+
+    def test_is_custom_defaults_to_false(self) -> None:
+        assert SAMPLE_TEMPLATE.is_custom is False
+
+    def test_is_custom_can_be_set(self) -> None:
+        t = PostTemplate(
+            name="mine", label="Mine", description="d", instructions="i", is_custom=True
+        )
+        assert t.is_custom is True
+
+
+class TestTemplateError:
+    """TemplateError carries the offending file and the reason."""
+
+    def test_exposes_path_and_reason(self) -> None:
+        err = TemplateError(Path("/tmp/bad.toml"), "missing field 'label'")
+        assert err.path == Path("/tmp/bad.toml")
+        assert err.reason == "missing field 'label'"
+
+    def test_message_names_the_file(self) -> None:
+        err = TemplateError(Path("/tmp/bad.toml"), "invalid TOML")
+        assert str(err) == "Invalid template file /tmp/bad.toml: invalid TOML"
+
+    def test_exported_from_package(self) -> None:
+        assert templates_pkg.TemplateError is TemplateError
+        assert templates_pkg.CUSTOM_BADGE == "🧩"
 
 
 class TestRegistry:
