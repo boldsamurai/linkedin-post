@@ -30,3 +30,12 @@ def local_config_path() -> Path | None:
 def history_db_path() -> Path:
     """Return the path to the history SQLite database."""
     return config_dir() / "history.db"
+
+
+def templates_dir() -> Path:
+    """Return the directory holding user-defined template files.
+
+    Neither this directory nor the config directory is created: a missing
+    directory means there are no custom templates.
+    """
+    return Path(user_config_dir(APP_NAME)) / "templates"

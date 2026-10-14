@@ -19,3 +19,9 @@ Append-only. Newest at the bottom. Each entry: date, decision, why.
 - **Decision:** custom templates are merged into the registry with `CUSTOM_BADGE` prefixed to their label; a broken TOML file or a name clash raises `TemplateError`, shown by the CLI as an error panel.
 - **Why:** the menu picks up custom templates without touching `cli/`, which keeps lanes A and B on disjoint files; fail-fast matches the project's error-handling rules.
 - **Given up:** the badge as pure presentation (it also appears in the metadata bar), and skipping a broken file with a warning while the rest keep working.
+
+## 2026-10-14 — Custom templates are read on every lookup, built-ins first (pending approval)
+
+- **Decision:** custom templates stay out of `TEMPLATES`; `list_templates()` reads `templates_dir()` on every call, and `get_template()` returns a built-in without reading the directory, so a broken custom file never blocks a built-in template that's already selected.
+- **Why:** no cache to invalidate, edits to template files apply on the next run, and the built-in clash check stays a plain lookup in `TEMPLATES`.
+- **Given up:** registering custom templates once at import (cheaper per call, but an import-time `TemplateError` and a mutable global); failing `get_template()` for built-ins too when any custom file is broken (stricter fail-fast).
