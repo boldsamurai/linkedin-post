@@ -1,6 +1,7 @@
 """Data models for fetched content."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 
 
@@ -33,3 +34,21 @@ class GitHubRepo:
     topics: list[str]
     readme_text: str
     url: str
+
+
+@dataclass(frozen=True)
+class FeedEntry:
+    """A single item from an RSS/Atom feed."""
+
+    title: str
+    url: str
+    published: datetime | None
+    feed_title: str
+
+
+@dataclass(frozen=True)
+class FeedFetchResult:
+    """Entries collected from several feeds plus the feeds that failed."""
+
+    entries: list[FeedEntry]
+    failed_feeds: list[str]

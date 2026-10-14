@@ -11,14 +11,19 @@ from linkedin_post_generator.fetcher.github_fetcher import (
     parse_github_url,
 )
 from linkedin_post_generator.fetcher.models import (
+    FeedEntry,
+    FeedFetchResult,
     FetchedContent,
     GitHubRepo,
     SourceType,
 )
+from linkedin_post_generator.fetcher.rss_fetcher import fetch_feed_entries
 from linkedin_post_generator.fetcher.text_input import create_note, prompt_for_note
 from linkedin_post_generator.fetcher.url_fetcher import fetch_url
 
 __all__ = [
+    "FeedEntry",
+    "FeedFetchResult",
     "FetchContentError",
     "FetchError",
     "FetchTimeoutError",
@@ -27,6 +32,7 @@ __all__ = [
     "SourceType",
     "create_note",
     "detect_source_type",
+    "fetch_feed_entries",
     "fetch_github_repo",
     "fetch_url",
     "parse_github_url",
